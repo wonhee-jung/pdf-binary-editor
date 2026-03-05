@@ -2,6 +2,8 @@ import { apiFetch } from "./client";
 
 export type UploadDocumentResponse = {
   document_id: string;
+  filename: string;
+  size_bytes: number;
 };
 
 export type PdfObjectSummary = {
@@ -25,13 +27,14 @@ export async function uploadDocument(file: File): Promise<UploadDocumentResponse
 }
 
 export async function listObjects(documentId: string): Promise<PdfObjectSummary[]> {
-  const data = await apiFetch<unknown>(`/api/v1/documents/${documentId}/objects`);
+  const encodedDocumentId = encodeURIComponent(documentId);
+  const data = await apiFetch<unknown>(`/api/v1/documents/${encodedDocumentId}/objects`);
 
   if (Array.isArray(data)) {
     return data.map((item, index) => {
       const asRecord = item as Record<string, unknown>;
       const idValue = asRecord.id ?? asRecord.obj_id ?? asRecord.object_id ?? String(index);
-      const labelValue = asRecord.label ?? asRecord.name ?? asRecord.type ?? String(idValue);
+      const labelValue = asRecord.label ?? asRecord.name ?? asRecord.kind ?? asRecord.type ?? String(idValue);
 
       return {
         id: String(idValue),
@@ -47,7 +50,7 @@ export async function listObjects(documentId: string): Promise<PdfObjectSummary[
     return list.map((item, index) => {
       const asRecord = item as Record<string, unknown>;
       const idValue = asRecord.id ?? asRecord.obj_id ?? asRecord.object_id ?? String(index);
-      const labelValue = asRecord.label ?? asRecord.name ?? asRecord.type ?? String(idValue);
+      const labelValue = asRecord.label ?? asRecord.name ?? asRecord.kind ?? asRecord.type ?? String(idValue);
 
       return {
         id: String(idValue),
@@ -60,7 +63,9 @@ export async function listObjects(documentId: string): Promise<PdfObjectSummary[
 }
 
 export async function getObjectDetail(documentId: string, objId: string): Promise<PdfObjectDetail> {
-  const data = await apiFetch<unknown>(`/api/v1/documents/${documentId}/objects/${objId}`);
+  const encodedDocumentId = encodeURIComponent(documentId);
+  const encodedObjId = encodeURIComponent(objId);
+  const data = await apiFetch<unknown>(`/api/v1/documents/${encodedDocumentId}/objects/${encodedObjId}`);
 
   if (typeof data === "string") {
     return { id: objId, raw: data };
@@ -68,7 +73,7 @@ export async function getObjectDetail(documentId: string, objId: string): Promis
 
   if (typeof data === "object" && data !== null) {
     const asRecord = data as Record<string, unknown>;
-    const raw = asRecord.raw ?? asRecord.content ?? asRecord.object ?? JSON.stringify(data, null, 2);
+    const raw = asRecord.raw_object ?? asRecord.raw ?? asRecord.content ?? asRecord.object ?? JSON.stringify(data, null, 2);
     return { id: objId, raw: String(raw) };
   }
 
@@ -76,11 +81,13 @@ export async function getObjectDetail(documentId: string, objId: string): Promis
 }
 
 export async function updateObjectDetail(documentId: string, objId: string, raw: string): Promise<void> {
-  await apiFetch<unknown>(`/api/v1/documents/${documentId}/objects/${objId}`, {
+  const encodedDocumentId = encodeURIComponent(documentId);
+  const encodedObjId = encodeURIComponent(objId);
+  await apiFetch<unknown>(`/api/v1/documents/${encodedDocumentId}/objects/${encodedObjId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ raw }),
+    body: JSON.stringify({ raw_object: raw }),
   });
 }
