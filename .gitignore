@@ -1,0 +1,51 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+frontend/.env
+!.env.example
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Yarn (Berry)
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Build outputs
+dist/
+build/
+frontend/dist/
+
+# Cache
+.vite/
+.cache/
+*.tsbuildinfo
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Local data
+backend/.data/
+
+
+# Agent prompt
+/modified
+AGENT.md
+ARCHITECTURE.md
